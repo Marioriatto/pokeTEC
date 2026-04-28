@@ -1,9 +1,44 @@
 from tkinter import *
 from PIL import Image, ImageTk
-def load_images():
-    logo = ImageTk.PhotoImage(Image.open("./assets/logo.png").resize((300, 300)))
-    entrenadores = list()
-    for i in range(1,6):
-        entrenadores.append(Image.open('./assets/avatars/entrenador'+str(i)+'.png'))
-        entrenadores[len(entrenadores)-1] = ImageTk.PhotoImage(entrenadores[len(entrenadores)-1].resize((150,150)))
-    return
+import os
+BASE_DIR = os.path.dirname(__file__)
+
+class Imagenes:
+    def __init__(self):
+        self.load_images()
+    def load_images(self):
+        logo = list()
+        path = os.path.join(BASE_DIR,'assets','logo.png')
+        imagenCruda = Image.open(path)
+        width, height = imagenCruda.size
+        imagenCruda = imagenCruda.resize((width//2,height//2))
+        imagenTk = ImageTk.PhotoImage(imagenCruda)
+        logo.append(imagenTk)
+
+        entrenadores = list()
+        path = os.path.join(BASE_DIR,'assets','avatars')
+        for i in os.listdir(path):
+            imagenCruda = Image.open(os.path.join(path, i))
+            width, height = imagenCruda.size
+            imagenCruda = imagenCruda.resize((width//2,height//2))
+            imagenTk = ImageTk.PhotoImage(imagenCruda)
+            entrenadores.append(imagenTk)
+        path = os.path.join(BASE_DIR, 'assets', 'presentador.png')
+        imagenCruda = Image.open(path)
+        width, height = imagenCruda.size
+        imagenCruda = imagenCruda.resize((width//2,height//2))
+        presentador = ImageTk.PhotoImage(imagenCruda)
+        entrenadores.append(presentador)
+
+        pokemones = list()
+        path = os.path.join(BASE_DIR,'assets','characters')
+        for i in os.listdir(path):
+            imagenCruda = Image.open(os.path.join(path, i))
+            width, height = imagenCruda.size
+            imagenCruda = imagenCruda.resize((width//2,height//2))
+            imagenTk = ImageTk.PhotoImage(imagenCruda)
+            pokemones.append(imagenTk)
+
+        self.imagenes = {'logo':[logo],
+                    'entrenadores':entrenadores,
+                    'pokemones':pokemones}
