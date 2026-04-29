@@ -9,7 +9,7 @@ Azul:"#0A3859"
 Amarillo:"#FDC125"
 """
 def pregame_screen(mode:str, root, canvas):
-    canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondo']['medium'])
+    canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondos'][0]['medium'])
     widgets = list()
     canvas.create_image(int(canvas.cget('width'))/4,(int(canvas.cget('height'))//3)+50,anchor='center',image=imagenes.imagenes['entrenadores'][-1])
     dialogo = Label(root,
@@ -26,14 +26,14 @@ def pregame_screen(mode:str, root, canvas):
     dropdown = ttk.Combobox(root,textvariable=pokemon)
     dropdown['values'] = tuple(['Pokemon ' + str(i) for i in range(1,11)])
     dropdown['state'] = 'readonly'
-    dropdown.place(x=(int(canvas.cget('width'))*3/4)-150,y=(int(canvas.cget('height'))//2)-20)
+    dropdown.place(x=(int(canvas.cget('width'))*3/4)-150,y=(int(canvas.cget('height'))//2)+30)
     imagenes.last_image_id = canvas.create_image(
         (int(canvas.cget('width'))*3/4),
         (int(canvas.cget('height'))//2)-150,
         anchor='center',
         image=imagenes.imagenes['pokemones'][int(list(pokemon.get())[-1])-1])
     
-    pokemon.trace_add("write", lambda : display_personaje(canvas, int(list(pokemon.get())[-1])-1, 'pokemones'))
+    pokemon.trace_add("write", lambda x,y,z: display_personaje(canvas, int(list(pokemon.get())[-1])-1, 'pokemones', 'small'))
     widgets.append(dropdown)
 
     confirmar = Button(root,
@@ -52,7 +52,7 @@ def pregame_screen(mode:str, root, canvas):
 def game_screen(root, canvas):
     return
 def main_screen(root, canvas):
-    canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondo']['small'])
+    canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondos'][0]['small'])
     # DRAW FELLAS
     screen_width = int(canvas.cget('width'))
     screen_height = int(canvas.cget('height'))
@@ -72,7 +72,7 @@ def main_screen(root, canvas):
     iniciar.place(x=screen_width/2,y=screen_height*3/4, anchor='center')
 
 def menu_screen(root, canvas):
-    canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondo']['medium'])
+    canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondos'][0]['medium'])
     canvas.create_image(int(canvas.cget('width'))/4,(int(canvas.cget('height'))//3)+50,anchor='center',image=jugador['avatar']['medium'])
     widgets = list()
     dialogo = Label(root,
@@ -143,15 +143,17 @@ def menu_screen(root, canvas):
 def display_personaje(canvas, index:int, personaje:str, size:str):
     global imagenes
     canvas.delete(imagenes.last_image_id)
+    if personaje == 'entrenadores':
+        imagen = imagenes.imagenes[personaje][index][size]
+    else:
+        imagen = imagenes.imagenes[personaje][index]
     imagenes.last_image_id = canvas.create_image(
         ((int(canvas.cget('width'))*3/4)),
         (int(canvas.cget('height'))//2)-150,
         anchor='center',
-        image=imagenes.imagenes[personaje][index][size]
-        if personaje == 'entrenadores'
-        else imagenes.imagenes[personaje][index])
+        image=imagen)
 def setup_screen(root, canvas):
-    canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondo']['medium'])
+    canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondos'][0]['medium'])
     widgets = list()
     canvas.create_image(int(canvas.cget('width'))/4,(int(canvas.cget('height'))//3)+50,anchor='center',image=imagenes.imagenes['entrenadores'][-1])
     dialogo = Label(root,

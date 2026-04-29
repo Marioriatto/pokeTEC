@@ -24,15 +24,18 @@ class Imagenes:
         imagenTk = ImageTk.PhotoImage(imagenCruda)
         logo.append(imagenTk)
 
-        fondo = dict()
-        path = os.path.join(BASE_DIR,'assets','bg.png')
-        imagenCruda = Image.open(path)
-        width, height = imagenCruda.size
-        imagenTk = ImageTk.PhotoImage(imagenCruda)
-        fondo['small'] = imagenTk
-        imagenCruda = imagenCruda.resize((int(round(width*1.5)),int(round(height*1.5))))
-        imagenTk = ImageTk.PhotoImage(imagenCruda)
-        fondo['medium'] = imagenTk
+        fondos = list()
+        path = os.path.join(BASE_DIR,'assets','fondos')
+        for fondo in os.listdir(path):
+            fotos = dict()
+            imagenCruda = Image.open(os.path.join(path,fondo))
+            width, height = imagenCruda.size
+            imagenTk = ImageTk.PhotoImage(imagenCruda)
+            fotos['small'] = imagenTk
+            imagenCruda = imagenCruda.resize((int(round(width*1.5)),int(round(height*1.5))))
+            imagenTk = ImageTk.PhotoImage(imagenCruda)
+            fotos['medium'] = imagenTk
+            fondos.append(fotos)
 
         entrenadores = list()
         path = os.path.join(BASE_DIR,'assets','avatars')
@@ -56,20 +59,24 @@ class Imagenes:
 
         pokemones = list()
         path = os.path.join(BASE_DIR,'assets','characters')
+        c = 0
         for i in os.listdir(path):
             imagenCruda = Image.open(os.path.join(path, i))
             width, height = imagenCruda.size
-            if max(height,width) > 600:
-                factor = int(max(imagenCruda.size)//300)
-                imagenCruda = imagenCruda.resize((width//factor,height//factor))
-            else:
-                imagenCruda = imagenCruda.resize((width//2,height//2))
-            print(imagenCruda.size)
+            print(i, ':',imagenCruda.size)
+            if max(height,width) >= 300:
+                factor = max(height,width)/300
+                imagenCruda = imagenCruda.resize((int(round(width/factor)),int(round(height/factor))))
+            elif max(height,width) < 300:
+                factor = 300/max(height,width)
+                imagenCruda = imagenCruda.resize((int(round(width*factor)),int(round(height*factor))))
+            print(i, ':',imagenCruda.size)
             imagenTk = ImageTk.PhotoImage(imagenCruda)
             pokemones.append(imagenTk)
+            c += 1
 
         self.imagenes = {'logo':logo,
-                    'fondo':fondo,
+                    'fondos':fondos,
                     'entrenadores':entrenadores,
                     'pokemones':pokemones}
     @property
