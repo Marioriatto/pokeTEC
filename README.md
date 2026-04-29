@@ -16,4 +16,4 @@ pip install pandas
 ```
 
 ## Documentacion
-![https://docs.google.com/document/d/1XHLPS1hmYGOp5b3RMCShlJSAgxg7gKce2oxtZxgc-3o/edit?usp=sharing](https://docs.google.com/document/d/1XHLPS1hmYGOp5b3RMCShlJSAgxg7gKce2oxtZxgc-3o/edit?usp=sharing)
+![Pete Gratis](https://docs.google.com/document/d/1XHLPS1hmYGOp5b3RMCShlJSAgxg7gKce2oxtZxgc-3o/edit?usp=sharing)
