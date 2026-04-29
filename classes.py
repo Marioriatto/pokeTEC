@@ -5,8 +5,9 @@ class Pokemon:
         self.defensas = []
         self.vida = 100
 class Entrenador:
-    def __init__(self, nombre:str, pkmLista:list):
+    def __init__(self, nombre:str, avatar, pkmLista:list):
         self.nombre = nombre
+        self.avatar = avatar
         self.pokemones = pkmLista
     @property
     def pokemones(self):
