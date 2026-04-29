@@ -1,6 +1,6 @@
 # pokeTEC
 
-Un juego hecho con tkinter.
+Un juego de rol inspirado en Pokemon, donde la presicion de las acciones no está determinada y las probabilidades juegan en tu contra.
 
 ## Requisitos
 
