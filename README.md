@@ -1,6 +1,6 @@
 # pokeTEC
 
-Un juego hecho con tkinter.
+Un juego de rol inspirado en Pokemon, donde la presicion de las acciones no está determinada y las probabilidades juegan en tu contra.
 
 ## Requisitos
 
@@ -9,10 +9,6 @@ Instalar la fuente Pocket Monk de ./assets/fonts
 ## Modulos a Instalar
 ```bash
 pip install pillow
-```
-
-```bash
-pip install pandas
 ```
 
 ## Documentacion
