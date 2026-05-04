@@ -3,39 +3,57 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from helpers import *
 from classes import *
+
 """
 COLORES:
 Azul:"#0A3859"
 Amarillo:"#FDC125"
 """
+
+def cambiar_lista_pokemones(canvas, index:int, tipo_de_personaje:str, size:str, dropdown:ttk.Combobox, label:Label, widgets):
+    if len(jugador['pokemones']) < 3:
+        jugador['pokemones'].append(index)
+    else:
+        label.config(text=f'Listo!')
+        return change_screen(root=root, canvas=canvas, widgets=widgets, func=game_screen)
+    newList = [i for i in range(1,11) if (i-1) not in jugador['pokemones']]
+    newNamesList = ['Pokemon ' + str(i) for i in newList]    
+    dropdown['values'] = tuple(newNamesList)
+    label.config(text=f'Selecciona a tu #{len(jugador['pokemones']) + 1} Pokemon!')
+    display_personaje(canvas, int(newList[0]), tipo_de_personaje, size)
+
 def pregame_screen(mode:str, root, canvas):
+    global game_mode
+    game_mode = mode
     canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondos'][0]['medium'])
     widgets = list()
     canvas.create_image(int(canvas.cget('width'))/4,(int(canvas.cget('height'))//3)+50,anchor='center',image=imagenes.imagenes['entrenadores'][-1])
     dialogo = Label(root,
-                    text='Selecciona a tus 3 Pokemones!',
+                    text=f'Selecciona a tu #{1} Pokemon!',
                     anchor='center',
                     width=30,
                     height=2,
                     font=("Pocket Monk", 22, "bold"),
                     fg="#FDC125",
                     bg="#0A3859",)
+    
     widgets.append(dialogo)
     dialogo.place(x=int(canvas.cget('width'))//8, y=int(canvas.cget('height'))*2//3)
+    # FIRST POKEMON
     pokemon = StringVar(root, value='Pokemon 1')
     dropdown = ttk.Combobox(root,textvariable=pokemon)
     dropdown['values'] = tuple(['Pokemon ' + str(i) for i in range(1,11)])
     dropdown['state'] = 'readonly'
     dropdown.place(x=(int(canvas.cget('width'))*3/4)-150,y=(int(canvas.cget('height'))//2)+30)
+    pokemon.trace_add('write',lambda x, y, z: display_personaje(canvas, int(list(pokemon.get())[-1])-1, 'pokemones', 'small'))
     imagenes.last_image_id = canvas.create_image(
         (int(canvas.cget('width'))*3/4),
         (int(canvas.cget('height'))//2)-150,
         anchor='center',
         image=imagenes.imagenes['pokemones'][int(list(pokemon.get())[-1])-1])
-    
-    pokemon.trace_add("write", lambda x,y,z: display_personaje(canvas, int(list(pokemon.get())[-1])-1, 'pokemones', 'small'))
     widgets.append(dropdown)
-
+    
+    
     confirmar = Button(root,
                        text='Confirmar',
                        width=11,
@@ -47,8 +65,12 @@ def pregame_screen(mode:str, root, canvas):
                        borderwidth=0,
                        highlightthickness=0,)
     widgets.append(confirmar)
-    confirmar.config(command=lambda : change_screen(root=root, canvas=canvas, widgets=widgets, func=game_screen))
+    confirmar.config(command=lambda : cambiar_lista_pokemones(canvas, int(pokemon.get()[-1])-1, 'pokemones', 'small', dropdown, label=dialogo, widgets=widgets))
     confirmar.place(x=(int(canvas.cget('width'))*3/4)+4,y=(int(canvas.cget('height'))//2)+25)
+"""
+    PREGAME CODE FINISHES HERE
+"""
+
 def game_screen(root, canvas):
     return
 def main_screen(root, canvas):
@@ -140,18 +162,19 @@ def menu_screen(root, canvas):
 
 
 
-def display_personaje(canvas, index:int, personaje:str, size:str):
+def display_personaje(canvas, index:int, tipo_de_personaje:str, size:str):
     global imagenes
     canvas.delete(imagenes.last_image_id)
-    if personaje == 'entrenadores':
-        imagen = imagenes.imagenes[personaje][index][size]
+    if tipo_de_personaje == 'entrenadores':
+        imagen = imagenes.imagenes[tipo_de_personaje][index][size]
     else:
-        imagen = imagenes.imagenes[personaje][index]
+        imagen = imagenes.imagenes[tipo_de_personaje][index]
     imagenes.last_image_id = canvas.create_image(
         ((int(canvas.cget('width'))*3/4)),
         (int(canvas.cget('height'))//2)-150,
         anchor='center',
         image=imagen)
+    
 def setup_screen(root, canvas):
     canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondos'][0]['medium'])
     widgets = list()
@@ -187,7 +210,7 @@ def setup_screen(root, canvas):
         anchor='center',
         image=imagenes.imagenes['entrenadores'][int(list(entrenador.get())[-1])-1]['small'])
     # TRACKEAR LOS CAMBIOS DE ENTRENADOR
-    entrenador.trace_add("write", lambda x,y,z: display_personaje(canvas, (int(list(entrenador.get())[-1])-1), 'entrenadores', 'small'))
+    entrenador.trace_add("write", lambda x,y,z: display_personaje(canvas, (int(entrenador.get()[-1])-1), 'entrenadores', 'small'))
     widgets.append(dropdown)
 
     confirmar = Button(root,
@@ -249,6 +272,8 @@ canvas.pack(fill='both', expand=True)
 imagenes = Imagenes()
 
 jugador = dict()
+jugador['pokemones'] = list()
+game_mode = ""
 
 main_screen(root,canvas)
 root.mainloop()

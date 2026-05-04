@@ -63,14 +63,12 @@ class Imagenes:
         for i in os.listdir(path):
             imagenCruda = Image.open(os.path.join(path, i))
             width, height = imagenCruda.size
-            print(i, ':',imagenCruda.size)
             if max(height,width) >= 300:
                 factor = max(height,width)/300
                 imagenCruda = imagenCruda.resize((int(round(width/factor)),int(round(height/factor))))
             elif max(height,width) < 300:
                 factor = 300/max(height,width)
                 imagenCruda = imagenCruda.resize((int(round(width*factor)),int(round(height*factor))))
-            print(i, ':',imagenCruda.size)
             imagenTk = ImageTk.PhotoImage(imagenCruda)
             pokemones.append(imagenTk)
             c += 1
