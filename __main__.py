@@ -4,46 +4,233 @@ from PIL import Image, ImageTk
 from helpers import *
 from classes import *
 from threading import Thread
-from random import randint, choice
+from random import randint, choice, choices
 """
 COLORES:
 Azul:"#0A3859"
 Amarillo:"#FDC125"
 """
 
-"""
-    TURNO 1: JUGADOR, -1: OPONENTE
-"""
 def game(root, canvas):
-    turno = 1
+    turno = "jugador"
+    widgets = list()
+    elementos_canvas = list()
     seleccionando_pokemon = False
     pokemon_jugador = None
-    pokemon_oponente = None
-    def game_logic():
+    datos_jugador['pokemones'] = [Pokemon(pokemones[i]) for i in datos_jugador['pokemones']]
+    datos_oponente = oponentes[choice([i for i in list(oponentes.keys()) if i != datos_jugador['avatar']])]
+    datos_oponente['pokemones'] = [Pokemon(pokemones[choice(list(pokemones.keys()))]) for i in range(3)]
+    
+    jugador = Entrenador(datos_jugador)
+    oponente = Entrenador(datos_oponente)
+    pokemon_oponente = choice(oponente.pokemones)
+    pokemon_jugador = choice(oponente.pokemones)
+    finish_round = None
+    hilo_pantalla = None
+    dificultad = None
+    if game_mode == "facil":
+        dificultad = 0.3
+    elif game_mode == "medio":
+        dificultad = 0.6
+    elif game_mode == "dificil":
+        dificultad = 0.9
+                
+    def game_screen(root, canvas):
+        nonlocal hilo_pantalla
+        nonlocal turno
         nonlocal pokemon_jugador
         nonlocal pokemon_oponente
-        nonlocal turno
+        nonlocal finish_round
         nonlocal seleccionando_pokemon
+        nonlocal elementos_canvas
+        nonlocal jugador
+        nonlocal oponente
+        global datos_jugador
+        global datos_oponente
+        seleccionando_pokemon = True
+        buttons = list()
+        elementos_canvas.append(canvas.create_image(
+            int(canvas.cget('width'))//2,
+            int(canvas.cget('height'))//2,anchor='center',
+            image=imagenes.imagenes['fondos'][1]['medium']))
+        ataque_button = Button(root,
+                       text='',
+                       width=11,
+                       height=1,
+                       font=("Pocket Monk", 22, "bold"),
+                       fg="#FDC125",
+                       bg="#0A3859",
+                       relief="flat",
+                       borderwidth=0,
+                       highlightthickness=0,
+                    )
+        defensa_button = Button(root,
+                       text='',
+                       width=11,
+                       height=1,
+                       font=("Pocket Monk", 22, "bold"),
+                       fg="#FDC125",
+                       bg="#0A3859",
+                       relief="flat",
+                       borderwidth=0,
+                       highlightthickness=0,
+                    )
+        ataque_button.config(state="disabled", command=lambda x : simular_turno([ataque_button, defensa_button], "ataque"))
+        defensa_button.config(state="disabled", command=lambda x: simular_turno([ataque_button, defensa_button], "defensa"))
+        widgets.append(ataque_button)
+        buttons.append(ataque_button)
+        widgets.append(defensa_button)
+        buttons.append(defensa_button)
 
-        datos_jugador['pokemones'] = [Pokemon(pokemones[i]) for i in datos_jugador['pokemones']]
-        jugador = Entrenador(datos_jugador)
-        datos_oponente = oponentes[choice([i for i in oponentes.keys if i != datos_jugador['avatar']])]
-        datos_oponente['pokemones'] = [Pokemon(pokemones[choice(pokemones.keys())]) for i in range(3)]
-        oponente = Entrenador(datos_oponente)
-        while 0 not in [len(oponente.pokemones),len(jugador.pokemones)]:
-            # PELEA
-            # SELECCIONAR POKEMON
+        vamos = canvas.create_text(
+            root.winfo_width()//2,
+            (root.winfo_height()//4),
+            text= "",
+            font=("Pocket Monk",80),
+            fill="#ffffff",
+            anchor='center'
+        )
+        elementos_canvas.append(vamos)
+        jugador_vida = canvas.create_text(
+            root.winfo_width()//5,
+            (root.winfo_height()//5),
+            text= "",
+            font=("Pocket Monk",40),
+            fill="#ffffff",
+            anchor='center'
+        )
+        elementos_canvas.append(jugador_vida)
+        oponente_vida = canvas.create_text(
+            root.winfo_width()//5,
+            (root.winfo_height()//5),
+            text= "",
+            font=("Pocket Monk",40),
+            fill="#ffffff",
+            anchor='center'
+        )
+        elementos_canvas.append(oponente_vida)
+        elementos_canvas.append(canvas.create_image(
+            int(canvas.cget('width'))//5,
+            int(canvas.cget('height'))//2,anchor='center',
+            image=imagenes.imagenes['entrenadores'][jugador.avatar]['small']))
+        elementos_canvas.append(canvas.create_image(
+            int(canvas.cget('width'))*4//5,
+            int(canvas.cget('height'))//2,anchor='center',
+            image=oponente.avatar['small']))
+        
+        def seleccionar_pokemon(root):
+            nonlocal pokemon_jugador
+            nonlocal seleccionando_pokemon
+            pokemon_jugador = None
+            pokemon_buttons = list()
+            def selec(pokemon):
+                nonlocal seleccionando_pokemon
+                nonlocal pokemon_jugador
+                seleccionando_pokemon=False
+                pokemon_jugador = pokemon
+            for i in range(len(jugador.pokemones)):
+                pokemon_buttons.append(Button(root,
+                           text=jugador.pokemones[i].nombre,
+                           width=11,
+                           height=1,
+                           font=("Pocket Monk", 22, "bold"),
+                           fg="#FDC125",
+                           bg="#0A3859",
+                           relief="flat",
+                           borderwidth=0,
+                           highlightthickness=0,
+                        ))
+                pokemon_buttons[-1].config(command=lambda x :selec(jugador.pokemones[i]))
+                spacing = 400 // len(jugador.pokemones)
+                pokemon_buttons[-1].place(x=int(canvas.cget('width'))//2, y=((int(canvas.cget('height'))//2)-spacing)+(spacing*i))
+            while seleccionando_pokemon:
+                if not seleccionando_pokemon:
+                    break
+            for butt in pokemon_buttons:
+                butt.place_forget()
+
+        def funcion(root, canvas):
+            nonlocal pokemon_jugador
+            nonlocal pokemon_oponente
+            nonlocal ataque_button
+            nonlocal defensa_button
+            nonlocal finish_round
+            finish_round = True
+            seleccionando_pokemon = True
+            pokemon_oponente = choice(oponente.pokemones)
+            print(pokemon_oponente)
             while True:
-                turno *= -1
-                if turno == 1:
-                    if
-        return
-    def game_screen(root, canvas):
-        while True:
-            if seleccionando_pokemon:
-                button = Button()
-    hilo_screen = Thread(target=game_screen, args=(root,canvas))
-    hilo_logica = Thread(target=game_logic)
+                canvas.itemconfig(oponente_vida, text = "Vida: " +pokemon_oponente.vida)
+                canvas.itemconfig(jugador_vida, text = "Vida: " +pokemon_jugador.vida)
+                if seleccionando_pokemon:
+                    seleccionar_pokemon(root)
+                    print("seleccionado")
+                    pokemon_oponente = choice(oponente.pokemones)
+                    ataque_button.config(state='active',text=pokemon_jugador.ataques[0])
+                    defensa_button.config(state='active',text=pokemon_jugador.defensas[0])
+                    continue
+                if finish_round:
+                    if len(oponente.pokemones) == 0:
+                        vamos.config(text='Gana '+jugador.nombre)
+                        break
+                    elif len(jugador.pokemones) == 0:
+                        vamos.config(text='Gana '+oponente.nombre)
+                        break
+                    else:
+                        pokemon_oponente = choice(oponente.pokemones)
+                        ataque_button.config(state='disable',text="")
+                        defensa_button.config(state='disable',text="")
+                        seleccionando_pokemon = True
+                        finish_round = False
+                else:
+                    if turno == "oponente":
+                        simular_turno(buttons, choice(["atacar","defender"]))
+                    
+        hilo_pantalla = Thread(target=funcion, args=(root)).start()
+    # FUNCION RNGsus
+    def simular_turno(buttons:list, decision:str):
+        nonlocal turno
+        nonlocal oponente
+        nonlocal jugador
+        nonlocal pokemon_jugador
+        nonlocal pokemon_oponente
+        nonlocal finish_round
+        nonlocal dificultad
+        distribucion_oponente = [(1 - dificultad)/2, (1 - dificultad)/2, dificultad]
+        print(distribucion_oponente)
+        distribucion_jugador = [dificultad, (1 - dificultad)/2, (1 - dificultad)/2]
+        print(distribucion_jugador)
+        # imprimir choice(oponente.ataques)
+        if turno == "jugador":
+            for button in buttons:
+               button.config(state="disabled")
+            turno = "oponente"
+            if decision == "ataque":
+                pokemon_oponente.vida += (pokemon_oponente.power * pokemon_oponente.defendiendo * choices([3,6,9], weights=distribucion_oponente, k=1)[0] - (pokemon_jugador.power * choices([3,6,9],weights=distribucion_jugador,k=1)[0]))
+                if pokemon_oponente.vida <= 0 :
+                    oponente.pokemones.remove(pokemon_oponente)
+                    pokemon_oponente.vida = 100
+                    jugador.pokemones.append(pokemon_oponente)
+                    pokemon_oponente = None
+                    finish_round = True
+                pokemon_oponente.defendiendo = 0
+            elif decision == "defensa":
+                pokemon_jugador.defendiendo = 1
+        elif turno == "oponente":
+            for button in buttons:
+                button.config(state="active")
+            turno = "jugador"
+            if decision == "ataque":
+                pokemon_jugador.vida += (pokemon_jugador.power * pokemon_jugador.defendiendo * choices([3,6,9], weights=distribucion_jugador, k=1)[0] - (pokemon_oponente.power * choices([3,6,9],weights=distribucion_oponente,k=1)[0]))
+                if pokemon_jugador.vida <= 0 :
+                    jugador.pokemones.remove(pokemon_jugador)
+                    pokemon_jugador = None
+                    finish_round = True
+                pokemon_jugador.defendiendo = 0
+            elif decision == "defensa":
+                pokemon_oponente.defendiendo = 1
+        
+    Thread(target=game_screen, args=(root,canvas)).start()
 
 
 def cambiar_lista_pokemones(canvas, index:int, tipo_de_personaje:str, size:str, dropdown:ttk.Combobox, label:Label, widgets, pokemon_StringVar:StringVar):
@@ -62,11 +249,11 @@ def cambiar_lista_pokemones(canvas, index:int, tipo_de_personaje:str, size:str, 
         label.config(text=f'Listo!')
         canvas.delete(imagenes.last_image_id)
         imagenes.last_image_id = None
-        return change_screen(root=root, canvas=canvas, widgets=widgets, func=game_screen)
+        return change_screen(root=root, canvas=canvas, widgets=widgets, func=game)
     
-def pregame_screen(mode:str, root, canvas):
+def pregame_screen(dificultad:str, root, canvas):
     global game_mode
-    game_mode = mode
+    game_mode = dificultad[0]
     canvas.create_image(int(canvas.cget('width'))//2,int(canvas.cget('height'))//2,anchor='center',image=imagenes.imagenes['fondos'][0]['medium'])
     widgets = list()
     canvas.create_image(int(canvas.cget('width'))/4,(int(canvas.cget('height'))//3)+50,anchor='center',image=imagenes.imagenes['entrenadores'][-1])
@@ -198,7 +385,7 @@ def display_personaje(canvas, index:int, tipo_de_personaje:str, size:str):
 def player_config(root, canvas, nombre:str, entrenador:str, widgets:list):
     global datos_jugador
     datos_jugador['nombre'] = nombre
-    datos_jugador['avatar'] = [int(list(entrenador)[-1])-1]
+    datos_jugador['avatar'] = int(list(entrenador)[-1])-1
     change_screen(root=root, canvas=canvas, widgets=widgets, func=menu_screen)
 
 def setup_screen(root, canvas):

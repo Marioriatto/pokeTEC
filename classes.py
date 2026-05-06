@@ -5,6 +5,7 @@ class Pokemon:
         self.defensas = datos['defensas']
         self.vida = datos['vida']
         self.power = datos['power']
+        self.defendiendo = 0
 class Entrenador:
     def __init__(self, datos:dict, ):
         self.nombre = datos['nombre']
